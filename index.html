@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ഇസ്ലാമിക് ക്വിസ് - Malayalam Islamic Quiz</title>
+    <style>
+        /* Importing Malayalam Font 'Manjari' and English Font 'Outfit' */
+        @import url('https://fonts.googleapis.com/css2?family=Manjari:wght@100;400;700&family=Outfit:wght@300;400;600&display=swap');
+
+        :root {
+            --primary: #059669; /* Emerald Green */
+            --primary-dark: #064e3b;
+            --secondary: #d1fae5;
+            --accent: #10b981;
+            --text-main: #064e3b;
+            --text-light: #4b5563;
+            --danger: #ef4444;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.92);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Manjari', 'Outfit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #047857 0%, #34d399 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Container */
+        .app-container {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Headers */
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        /* Screen Management */
+        .screen {
+            display: none;
+            animation: slideUp 0.4s ease forwards;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Buttons */
+        .btn-main {
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 10px 20px -5px rgba(5, 150, 105, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .btn-main:active {
+            transform: scale(0.98);
+        }
+
+        /* Quiz Section */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 100%;
+            border-radius: 10px;
+            transition: width 0.1s linear, background 0.3s;
+        }
+
+        .question-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .options-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .btn-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .btn-option:hover:not([disabled]) {
+            border-color: var(--primary);
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-option.correct {
+            background: #d1fae5;
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .btn-option.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+
+        /* Stats Badge */
+        .stats {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            background: #f3f4f6;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Loading Screen (Simulates API Fetch) -->
+        <div id="loader-screen" class="screen">
+            <div class="spinner"></div>
+            <p>ചോദ്യങ്ങൾ തയ്യാറാക്കുന്നു...</p>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div style="font-size: 4rem; margin-bottom: 10px;">🕌</div>
+            <h1>ഇസ്ലാമിക് ക്വിസ്</h1>
+            <p class="subtitle">അറിവ് നേടൂ, വിജയിക്കൂ</p>
+            
+            <div style="text-align: left; background: #ecfdf5; padding: 15px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #a7f3d0;">
+                <p>📌 <strong>വിഷയം:</strong> ഖുർആൻ & ചരിത്രം</p>
+                <p>⏱ <strong>സമയം:</strong> 5 സെക്കൻഡ്</p>
+                <p>🔄 <strong>പ്രത്യേകത:</strong> ഓരോ തവണയും പുതിയ ചോദ്യങ്ങൾ</p>
+            </div>
+
+            <button class="btn-main" onclick="fetchAndStart()">തുടങ്ങാം</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="progress-bar">
+                <div id="timer" class="progress-fill"></div>
+            </div>
+
+            <div class="question-card">
+                <p id="question-text" class="question-text">Loading...</p>
+            </div>
+
+            <div id="options-container" class="options-list">
+                <!-- Options will be generated here -->
+            </div>
+
+            <div class="stats">
+                ചോദ്യം <span id="q-idx">1</span> / <span id="q-total">10</span>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <div style="font-size: 4rem; margin-bottom: 10px;">✨</div>
+            <h2 id="final-title">പൂർത്തിയായി!</h2>
+            <h1 style="font-size: 3.5rem; color: var(--primary); margin: 10px 0;" id="final-score">0</h1>
+            <p class="subtitle" id="final-msg">നല്ല ശ്രമം!</p>
+            <button class="btn-main" onclick="fetchAndStart()">വീണ്ടും കളിക്കാം</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- LARGE DATABASE (Simulating API to ensure randomness) ---
+        // Contains 50+ unique questions to ensure users don't see repeats often.
+        const DATABASE = [
+            { q: "വിശുദ്ധ ഖുർആനിൽ എത്ര അധ്യായങ്ങളുണ്ട് (സൂറത്തുകൾ)?", a: "114", opts: ["110", "112", "116"] },
+            { q: "ഖുർആനിലെ ഏറ്റവും വലിയ സൂറത്ത് ഏതാണ്?", a: "അൽ-ബഖറ", opts: ["ആലു ഇമ്രാൻ", "അൽ-നിസാഅ്", "അൽ-മാഇദ"] },
+            { q: "ഏത് പ്രവാചകൻ്റെ പേരിലാണ് ഖുർആനിൽ ഒരു സൂറത്ത് ഉള്ളത്?", a: "യൂസുഫ് (അ)", opts: ["ആദം (അ)", "മൂസ (അ)", "ഈസാ (അ)"] },
+            { q: "ഇസ്ലാമിലെ ആദ്യത്തെ യുദ്ധം ഏതാണ്?", a: "ബദർ യുദ്ധം", opts: ["ഉഹുദ് യുദ്ധം", "ഖന്ദഖ് യുദ്ധം", "മുഅ്ത യുദ്ധം"] },
+            { q: "പ്രവാചകൻ മുഹമ്മദ് (സ) യുടെ പിതാവിൻ്റെ പേര്?", a: "അബ്ദുള്ള", opts: ["അബൂതാലിബ്", "അബ്ദുൽ മുത്തലിബ്", "ഹംസ"] },
+            { q: "വിശ്വാസികളുടെ മാതാവ് എന്നറിയപ്പെടുന്നതാര്?", a: "ആയിഷ (റ)", opts: ["ഫാത്തിമ (റ)", "മറിയം (അ)", "ആസിയ (അ)"] }, // Note: Specifically Ummul Mu'mineen often refers to all wives, but Aisha is a common quiz answer context.
+            { q: "ഖുർആനിൽ 'ബിസ്മി' ഇല്ലാതെ തുടങ്ങുന്ന സൂറത്ത്?", a: "അത്തൗബ", opts: ["അൽ-അنفാൽ", "യൂനുസ്", "ഹൂദ്"] },
+            { q: "രണ്ട് തവണ 'ബിസ്മി' ഉള്ള സൂറത്ത് ഏതാണ്?", a: "അന്നംല്", opts: ["അന്നൂർ", "അന്നഹ്ൽ", "യാസീൻ"] },
+            { q: "ഇസ്ലാമിലെ അഞ്ച് കാര്യങ്ങളിൽ (സ്തംഭങ്ങളിൽ) രണ്ടാമത്തേത്?", a: "നിസ്കാരം", opts: ["സകാത്ത്", "ഹജ്ജ്", "നോമ്പ്"] },
+            { q: "ഏറ്റവും കൂടുതൽ കാലം ജീവിച്ച പ്രവാചകൻ?", a: "നൂഹ് (അ)", opts: ["ആദം (അ)", "ഇബ്രാഹിം (അ)", "ഇദ്രീസ് (അ)"] },
+            { q: "തീയിൽ എറീയപ്പെട്ട പ്രവാചകൻ ആര്?", a: "ഇബ്രാഹിം (അ)", opts: ["മൂസ (അ)", "യൂസുഫ് (അ)", "ലൂത്ത് (അ)"] },
+            { q: "മദീനയുടെ പഴയ പേര് എന്തായിരുന്നു?", a: "യസ് രിബ്", opts: ["ത്വായിഫ്", "മക്ക", "ഖൈബർ"] },
+            { q: "പ്രവാചകൻ (സ) യുടെ മകൾ ഫാത്തിമ (റ) യുടെ ഭർത്താവ്?", a: "അലി (റ)", opts: ["ഉസ്മാൻ (റ)", "ഉമർ (റ)", "അബൂബക്കർ (റ)"] },
+            { q: "ഖുർആൻ പാരായണം ചെയ്യുമ്പോൾ സുജൂദ് ചെയ്യേണ്ട സ്ഥലങ്ങൾ എത്ര?", a: "15", opts: ["14", "10", "12"] },
+            { q: "ഇസ്ലാമിക കലണ്ടറിലെ (ഹിജ്റ) ആദ്യ മാസം?", a: "മുഹറം", opts: ["റമദാൻ", "ശവ്വാൽ", "റജബ്"] },
+            { q: "ലൈലത്തുൽ ഖദ്ർ ഏത് മാസത്തിലാണ്?", a: "റമദാൻ", opts: ["ശഅബാൻ", "റജബ്", "ദുൽഹിജ്ജ"] },
+            { q: "ഹജ്ജ് നിർവഹിക്കുന്നത് ഏത് മാസത്തിലാണ്?", a: "ദുൽഹിജ്ജ", opts: ["റമദാൻ", "മുഹറം", "ശവ്വാൽ"] },
+            { q: "അല്ലാഹുവിൻ്റെ സിംഹം എന്നറിയപ്പെടുന്ന സ്വഹാബി?", a: "ഹംസ (റ)", opts: ["അലി (റ)", "ഉമർ (റ)", "ഖാലിദ് ബിൻ വലീദ്"] },
+            { q: "ഖുർആനിലെ സൂറത്തുകൾ മക്കയിൽ അവതരിച്ചവയും മദീനയിൽ അവതരിച്ചവയുമാണ്. മക്കയിൽ അവതരിച്ചവ ഏത് പേരിൽ അറിയപ്പെടുന്നു?", a: "മക്കി", opts: ["മദനി", "ഖുറൈശി", "അറബി"] },
+            { q: "ജന്നത്തുൽ ഫിർദൗസ് എന്തിനെ സൂചിപ്പിക്കുന്നു?", a: "സ്വർഗ്ഗത്തിലെ ഏറ്റവും ഉയർന്ന പദവി", opts: ["നരകം", "ഒരു നദി", "ഒരു മല"] },
+            { q: "പ്രവാചകൻ (സ) ജനിച്ച നഗരം?", a: "മക്ക", opts: ["മദീന", "താഇഫ്", "ജറുസലേം"] },
+            { q: "പ്രവാചകൻ (സ) അന്തരിച്ച നഗരം?", a: "മദീന", opts: ["മക്ക", "താഇഫ്", "കൈറോ"] },
+            { q: "ആദ്യത്തെ മനുഷ്യൻ ആരാണ്?", a: "ആദം (അ)", opts: ["നൂഹ് (അ)", "ഇബ്രാഹിം (അ)", "മൂസ (അ)"] },
+            { q: "കഅബയുടെ താക്കോൽ സൂക്ഷിക്കുന്ന ഗോത്രം?", a: "ബനു ശൈബ", opts: ["ബനു ഹാഷിം", "ബനു ഉമയ്യ", "ബനു തമീം"] },
+            { q: "ഏത് നമസ്കാരത്തിനാണ് ബാങ്കും ഇഖാമത്തും ഇല്ലാത്തത്?", a: "ജനാസ നമസ്കാരം", opts: ["പെരുന്നാൾ നമസ്കാരം", "വിത്ർ", "ളുഹർ"] },
+            { q: "ഉറക്കത്തിൽ നിന്ന് എഴുന്നേൽക്കുമ്പോൾ ചൊല്ലേണ്ടത്?", a: "അൽഹംദുലില്ലാഹ്", opts: ["സുബ്ഹാനള്ളാ", "അല്ലാഹു അക്ബർ", "ബിസ്മില്ലാഹ്"] },
+            { q: "ഖുർആനിലെ ആയത്തുകളുടെ എണ്ണം ഏകദേശം എത്ര?", a: "6236", opts: ["6666", "5000", "7000"] }, // Standard counting
+            { q: "ഇസ്ലാമിലെ ആദ്യത്തെ പള്ളി?", a: "മസ്ജിദുൽ ഖുബാ", opts: ["മസ്ജിദുൽ ഹറം", "മസ്ജിദുന്നബവി", "മസ്ജിദുൽ അഖ്സ"] },
+            { q: "രണ്ടാം ഖലീഫ ആരാണ്?", a: "ഉമർ (റ)", opts: ["അബൂബക്കർ (റ)", "ഉസ്മാൻ (റ)", "അലി (റ)"] },
+            { q: "നാലാം ഖലീഫ ആരാണ്?", a: "അലി (റ)", opts: ["ഉമർ (റ)", "ഉസ്മാൻ (റ)", "മുആവിയ"] },
+            { q: "സമുദ്രം പിളർന്നു വഴി ഉണ്ടാക്കിയ പ്രവാചകൻ?", a: "മൂസ (അ)", opts: ["ഈസാ (അ)", "യൂനുസ് (അ)", "നൂഹ് (അ)"] },
+            { q: "പക്ഷികളോട് സംസാരിക്കാൻ കഴിവുണ്ടായിരുന്ന പ്രവാചകൻ?", a: "സുലൈമാൻ (അ)", opts: ["ദാവൂദ് (അ)", "യൂസുഫ് (അ)", "അയ്യൂബ് (അ)"] },
+            { q: "സൗന്ദര്യത്തിന് പേരുകേട്ട പ്രവാചകൻ?", a: "യൂസുഫ് (അ)", opts: ["മൂസ (അ)", "മുഹമ്മദ് (സ)", "ഈസാ (അ)"] },
+            { q: "ദാവൂദ് നബിക്ക് ലഭിച്ച വേദഗ്രന്ഥം?", a: "സബൂർ", opts: ["തൗറാത്ത്", "ഇഞ്ചീൽ", "ഖുർആൻ"] },
+            { q: "മൂസ നബിക്ക് ലഭിച്ച വേദഗ്രന്ഥം?", a: "തൗറാത്ത്", opts: ["സബൂർ", "ഇഞ്ചീൽ", "സുഹുഫ്"] },
+            { q: "ഈസാ നബിക്ക് ലഭിച്ച വേദഗ്രന്ഥം?", a: "ഇഞ്ചീൽ", opts: ["തൗറാത്ത്", "സബൂർ", "ഫുർഖാൻ"] },
+            { q: "ഏറ്റവും കൂടുതൽ ഹദീസുകൾ നിവേദനം ചെയ്തത്?", a: "അബൂഹുറൈറ (റ)", opts: ["ആയിഷ (റ)", "അനസ് (റ)", "ഉമർ (റ)"] },
+            { q: "അറഫാ ദിനം ഏത് മാസത്തിലാണ്?", a: "ദുൽഹിജ്ജ", opts: ["റമദാൻ", "മുഹറം", "സഫർ"] },
+            { q: "ബദർ യുദ്ധത്തിൽ മുസ്ലിംകളുടെ എണ്ണം എത്രയായിരുന്നു?", a: "313", opts: ["1000", "700", "500"] },
+            { q: "ഉഹുദ് യുദ്ധത്തിൽ മുസ്ലിംകളുടെ എണ്ണം എത്രയായിരുന്നു?", a: "700", opts: ["313", "1000", "500"] },
+            { q: "ഖുർആനിലെ 'മാതാവ്' (ഉമ്മുൽ കിതാബ്) എന്നറിയപ്പെടുന്നത്?", a: "അൽ-ഫാതിഹ", opts: ["യാസീൻ", "അൽ-ബഖറ", "അൽ-ഇഖ്‌ലാസ്"] },
+            { q: "അല്ലാഹുവിൻ്റെ 99 നാമങ്ങളെ എന്ത് വിളിക്കുന്നു?", a: "അസ്മാഉൽ ഹുസ്ന", opts: ["കലിമ", "ദിക്ർ", "തസ്ബീഹ്"] },
+            { q: "ഇസ്ലാമിലെ മൂന്നാം പുണ്യസ്ഥലം?", a: "മസ്ജിദുൽ അഖ്സ", opts: ["മസ്ജിദുൽ ഖുബാ", "മസ്ജിദുന്നബവി", "കഅബ"] },
+            { q: "പ്രവാചകൻ്റെ ആദ്യ പത്നി ഖദീജ (റ) യുടെ പിതാവിൻ്റെ പേര്?", a: "ഖുവൈലിദ്", opts: ["ഉമർ", "അബൂബക്കർ", "അബ്ദുൽ മുത്തലിബ്"] },
+            { q: "നമസ്കാരത്തിന് മുൻപ് നിർബന്ധമായും ചെയ്തിരിക്കേണ്ട കാര്യം?", a: "വുദു", opts: ["കുളി", "ഭക്ഷണം", "ഉറക്കം"] },
+            { q: "ഒരു നന്മ ചെയ്താൽ അല്ലാഹു എത്ര മടങ്ങാണ് പ്രതിഫലം നൽകുന്നത്?", a: "10", opts: ["1", "5", "700"] },
+            { q: "അല്ലാഹുവിന് ഏറ്റവും ഇഷ്ടപ്പെട്ട സ്ഥലം?", a: "പള്ളികൾ", opts: ["വീടുകൾ", "അങ്ങാടികൾ", "സ്കൂളുകൾ"] },
+            { q: "അല്ലാഹുവിന് ഏറ്റവും വെറുപ്പുള്ള സ്ഥലം?", a: "അങ്ങാടികൾ", opts: ["പള്ളികൾ", "വീടുകൾ", "കാടുകൾ"] },
+            { q: "മലക്കുകൾ (മാലാഖമാർ) സൃഷ്ടിക്കപ്പെട്ടത് എന്തിൽ നിന്നാണ്?", a: "പ്രകാശം (നൂർ)", opts: ["മണ്ണ്", "തീ", "വായു"] },
+            { q: "ജിന്നുകൾ സൃഷ്ടിക്കപ്പെട്ടത് എന്തിൽ നിന്നാണ്?", a: "തീ", opts: ["മണ്ണ്", "പ്രകാശം", "വെള്ളം"] },
+            { q: "മനുഷ്യൻ സൃഷ്ടിക്കപ്പെട്ടത് എന്തിൽ നിന്നാണ്?", a: "മണ്ണ്", opts: ["തീ", "പ്രകാശം", "സ്വർണ്ണം"] }
+        ];
+
+        // --- GAME LOGIC ---
+        let questions = [];
+        let currentIdx = 0;
+        let score = 0;
+        let timeLeft = 5;
+        let timerInterval;
+
+        const screens = {
+            start: document.getElementById('start-screen'),
+            game: document.getElementById('game-screen'),
+            result: document.getElementById('result-screen'),
+            loader: document.getElementById('loader-screen')
+        };
+
+        const els = {
+            question: document.getElementById('question-text'),
+            options: document.getElementById('options-container'),
+            timer: document.getElementById('timer'),
+            qIdx: document.getElementById('q-idx'),
+            qTotal: document.getElementById('q-total'),
+            finalScore: document.getElementById('final-score'),
+            finalMsg: document.getElementById('final-msg')
+        };
+
+        function showScreen(name) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[name].classList.add('active');
+        }
+
+        // Simulates fetching random data from an API
+        function fetchAndStart() {
+            showScreen('loader');
+            
+            // Artificial delay to feel like fetching data
+            setTimeout(() => {
+                // Shuffle the huge database and pick 10
+                questions = [...DATABASE]
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 10);
+                
+                currentIdx = 0;
+                score = 0;
+                els.qTotal.innerText = questions.length;
+                showScreen('game');
+                loadQuestion();
+            }, 800);
+        }
+
+        function loadQuestion() {
+            if (currentIdx >= questions.length) {
+                endGame();
+                return;
+            }
+
+            clearInterval(timerInterval);
+            els.timer.style.width = '100%';
+            els.timer.style.backgroundColor = 'var(--primary)';
+            timeLeft = 5;
+
+            const data = questions[currentIdx];
+            els.qIdx.innerText = currentIdx + 1;
+            els.question.innerText = data.q;
+            els.options.innerHTML = '';
+
+            // Mix correct answer with options
+            let allOptions = [...data.opts, data.a];
+            allOptions.sort(() => Math.random() - 0.5);
+
+            allOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(btn, opt === data.a);
+                els.options.appendChild(btn);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            // Update every 50ms for smooth animation
+            let totalTime = 5000;
+            let remaining = totalTime;
+
+            timerInterval = setInterval(() => {
+                remaining -= 50;
+                let percent = (remaining / totalTime) * 100;
+                els.timer.style.width = `${percent}%`;
+
+                if (percent < 30) els.timer.style.backgroundColor = 'var(--danger)';
+
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 50);
+        }
+
+        function checkAnswer(btn, isCorrect) {
+            clearInterval(timerInterval);
+            const btns = document.querySelectorAll('.btn-option');
+            btns.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                btn.classList.add('correct');
+                score++;
+            } else {
+                btn.classList.add('wrong');
+                // Highlight correct
+                btns.forEach(b => {
+                    if (b.innerText === questions[currentIdx].a) b.classList.add('correct');
+                });
+            }
+
+            setTimeout(() => {
+                currentIdx++;
+                loadQuestion();
+            }, 1000);
+        }
+
+        function handleTimeout() {
+            const btns = document.querySelectorAll('.btn-option');
+            btns.forEach(b => {
+                b.disabled = true;
+                if (b.innerText === questions[currentIdx].a) b.classList.add('correct');
+            });
+            setTimeout(() => {
+                currentIdx++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        function endGame() {
+            showScreen('result');
+            els.finalScore.innerText = `${score} / ${questions.length}`;
+            
+            if (score === 10) els.finalMsg.innerText = "അടിപൊളി! എല്ലാ ഉത്തരങ്ങളും ശരിയാണ് 🎉";
+            else if (score >= 7) els.finalMsg.innerText = "നല്ല പ്രകടനം! മാഷാ അല്ലാഹ് 👍";
+            else if (score >= 4) els.finalMsg.innerText = "കുഴപ്പമില്ല, ഇനിയും പഠിക്കാം 📚";
+            else els.finalMsg.innerText = "സാരമില്ല, വീണ്ടും ശ്രമിക്കുക 💪";
+        }
+    </script>
+</body>
+</html>
